@@ -18,29 +18,25 @@ public class Example {
             .check(message -> message.getTopic().equals("message:send"))
             // ...we run this function that takes it in and sends back some output
             .accept(message -> {
-                return new HashMap<String, Collection<NoeliaMessage>>() {{
-                    // Send an empty message to service-1
-                    put("service-1", Collections.singletonList(
+                return ImmutableMap.of("service-1", Collections.singletonList(
                             new NoeliaMessage("example", "message:send", null)
-                    ));
-                    // Send an empty response to whoever sent us this message
-                    put(message.getSource(), Collections.singletonList(
+                    ),
+                    message.getSource(), Collections.singletonList(
                             new NoeliaMessage("example", "message:respond", null)
                     ));
-                }};
             })
             .subscribe();
         // Sending messages is pretty similar to what the accept() function returns
-        Noelia.getNetworker().sendMany(new HashMap<String, Collection<NoeliaMessage>>() {{
-            // Send an empty message to service-1
-            put("service-1", Collections.singletonList(
+        Noelia.getNetworker().sendMany(
+            ImmutableMap.of(
+                "service-1", Collections.singletonList(
                     new NoeliaMessage("example", "message:send", null)
-            ));
-            // Send an empty response to whoever sent us this message
-            put(message.getSource(), Collections.singletonList(
+                ),
+                message.getSource(), Collections.singletonList(
                     new NoeliaMessage("example", "message:respond", null)
-            ));
-        }});
+                )
+            )
+        );
         // Or we can do it the "manual" way if we want
         Noelia.getNetworker().sendMany("service-1", Collections.singletonList(
                 new NoeliaMessage("example", "message-send", null)
