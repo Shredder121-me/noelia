@@ -2,8 +2,10 @@ package chat.amy.noelia;
 
 import chat.amy.noelia.message.NoeliaMessage;
 import chat.amy.noelia.network.NoeliaNetworker;
+import chat.amy.noelia.network.http.HttpNetworker;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -20,10 +22,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class Noelia {
     @Getter(AccessLevel.PACKAGE)
     private static final Collection<NoeliaFlow> flows = new CopyOnWriteArrayList<>();
-    private static final ExecutorService pool = Executors.newCachedThreadPool(new NoeliaThreadFactory("Noelia"));
+    private static final ExecutorService pool = Executors.newCachedThreadPool(new NoeliaThreadFactory("noelia"));
     private static final Queue<NoeliaMessage> queue = new ConcurrentLinkedDeque<>();
     @Getter
-    private static NoeliaNetworker networker;
+    @Setter
+    private static NoeliaNetworker networker = new HttpNetworker();
     
     private Noelia() {
     }
@@ -33,11 +36,15 @@ public final class Noelia {
         return new NoeliaFlow();
     }
     
-    public static void accept(final NoeliaMessage message) {
-        submit(new NoeliaWorker(message));
+    public static void accept(final Collection<NoeliaMessage> messages) {
+        submit(new NoeliaWorker(messages));
     }
     
     static void take(final NoeliaFlow flow) {
+        if(!networker.getNetworkService().isRunning()) {
+            // TODO: Log
+            networker.getNetworkService().startAsync();
+        }
         if(!flows.contains(flow)) {
             flows.add(flow);
         }

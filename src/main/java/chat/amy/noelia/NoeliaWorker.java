@@ -11,29 +11,31 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 8/22/17.
  */
 final class NoeliaWorker implements Runnable {
-    private final NoeliaMessage message;
+    private final Collection<NoeliaMessage> messages;
     
-    NoeliaWorker(final NoeliaMessage message) {
-        this.message = message;
+    NoeliaWorker(final Collection<NoeliaMessage> messages) {
+        this.messages = messages;
     }
     
     @Override
     public void run() {
-        final Map<String, Collection<NoeliaMessage>> output = new ConcurrentHashMap<>();
-        Noelia.getFlows().stream().filter(e -> e.check(message)).forEach(e -> e.accept(message).forEach((k, v) -> {
-            if(output.containsKey(k)) {
-                output.get(k).addAll(v);
-            } else {
-                output.put(k, v);
+        messages.forEach(message -> {
+            final Map<String, Collection<NoeliaMessage>> output = new ConcurrentHashMap<>();
+            Noelia.getFlows().stream().filter(e -> e.check(message)).forEach(e -> e.accept(message).forEach((k, v) -> {
+                if(output.containsKey(k)) {
+                    output.get(k).addAll(v);
+                } else {
+                    output.put(k, v);
+                }
+            }));
+            switch(Noelia.getNetworker().sendMany(output)) {
+                // TODO: Specialized errors
+                case OK:
+                    break;
+                case ERR:
+                    // logging :S
+                    break;
             }
-        }));
-        switch(Noelia.getNetworker().sendMany(output)) {
-            // TODO: Specialized errors
-            case OK:
-                break;
-            case ERR:
-                // logging :S
-                break;
-        }
+        });
     }
 }
