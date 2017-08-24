@@ -56,7 +56,7 @@ public class Example {
 By default, noelia assumes that you're sending JSON messages over the network; the `NoeliaMessage` class contains a Gson `JsonObject` by default. This many change eventually(TM), but for now JSON is good enough. 
 
 Other than this, messages are to be in the following format:
-```JSON
+```Javascript
 {
   "s": "source", // To know where it came from, since it's the likely 
                  // place for sending responses
