@@ -10,8 +10,10 @@ import lombok.Setter;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.Queue;
-import java.util.concurrent.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -23,7 +25,6 @@ public final class Noelia {
     @Getter(AccessLevel.PACKAGE)
     private static final Collection<NoeliaFlow> flows = new CopyOnWriteArrayList<>();
     private static final ExecutorService pool = Executors.newCachedThreadPool(new NoeliaThreadFactory("noelia"));
-    private static final Queue<NoeliaMessage> queue = new ConcurrentLinkedDeque<>();
     @Getter
     @Setter
     private static NoeliaNetworker networker = new HttpNetworker();
@@ -52,7 +53,7 @@ public final class Noelia {
     
     @SuppressWarnings("TypeMayBeWeakened")
     private static void submit(final NoeliaWorker worker) {
-        pool.submit(worker);
+        pool.execute(worker);
     }
     
     private static final class NoeliaThreadFactory implements ThreadFactory {
@@ -65,7 +66,7 @@ public final class Noelia {
         
         @Override
         public Thread newThread(@Nonnull final Runnable r) {
-            final Thread thread = new Thread(r, identifier + " thread " + threadCount.getAndIncrement());
+            final Thread thread = new Thread(r, identifier + " worker thread " + threadCount.getAndIncrement());
             thread.setDaemon(true);
             return thread;
         }
