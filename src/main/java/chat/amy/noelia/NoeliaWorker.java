@@ -19,8 +19,8 @@ final class NoeliaWorker implements Runnable {
     
     @Override
     public void run() {
+        final Map<String, Collection<NoeliaMessage>> output = new ConcurrentHashMap<>();
         messages.forEach(message -> {
-            final Map<String, Collection<NoeliaMessage>> output = new ConcurrentHashMap<>();
             Noelia.getFlows().stream().filter(e -> e.check(message)).forEach(e -> e.accept(message).forEach((k, v) -> {
                 if(output.containsKey(k)) {
                     output.get(k).addAll(v);
@@ -28,14 +28,14 @@ final class NoeliaWorker implements Runnable {
                     output.put(k, v);
                 }
             }));
-            switch(Noelia.getNetworker().sendMany(output)) {
-                // TODO: Specialized errors
-                case OK:
-                    break;
-                case ERR:
-                    // logging :S
-                    break;
-            }
         });
+        switch(Noelia.getNetworker().sendMany(output)) {
+            // TODO: Specialized errors
+            case OK:
+                break;
+            case ERR:
+                // logging :S
+                break;
+        }
     }
 }
