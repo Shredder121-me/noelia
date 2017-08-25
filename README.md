@@ -17,6 +17,9 @@ public class Example {
             // If it's a message being sent to us...
             .check(message -> message.getTopic().equals("message:send"))
             // ...we run this function that takes it in and sends back some output
+            // Note: We can have as many check() predicates as we want
+            .check(message -> true)
+            .check(message -> 1 == 1)
             .accept(message -> {
                 return ImmutableMap.of("service-1", Collections.singletonList(
                             new NoeliaMessage("example", "message:send", null)
