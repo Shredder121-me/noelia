@@ -2,6 +2,8 @@
 
 noelia is a library for reactive-like actor-style message passing, designed for use over a network of distributed microservices. noelia was developed to power [amybot](https://amy.chat/).
 
+This software is MIT licensed; please read the `LICENSE` file to understand what this means. A short description can be found [here](https://tldrlegal.com/license/mit-license). 
+
 ## Example
 
 ```Java
