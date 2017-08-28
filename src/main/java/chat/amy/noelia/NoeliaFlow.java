@@ -1,11 +1,13 @@
 package chat.amy.noelia;
 
 import chat.amy.noelia.message.NoeliaMessage;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.CheckReturnValue;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -14,6 +16,9 @@ import java.util.function.Predicate;
  * @since 8/22/17.
  */
 public class NoeliaFlow {
+
+    private static final Function<?, Map<String, Collection<NoeliaMessage>>> NO_OP = __ -> ImmutableMap.of();
+
     private final Collection<Predicate<NoeliaMessage>> checks = new CopyOnWriteArrayList<>();
     private Function<NoeliaMessage, Map<String, Collection<NoeliaMessage>>> acceptFunction;
     
@@ -27,7 +32,15 @@ public class NoeliaFlow {
         }
         return this;
     }
-    
+
+    @CheckReturnValue
+    public NoeliaFlow accept(Consumer<NoeliaMessage> consumer) {
+        return accept(NO_OP.compose(message -> {
+            consumer.accept(message);
+            return null;
+        }));
+    }
+
     @CheckReturnValue
     public NoeliaFlow accept(final Function<NoeliaMessage, Map<String, Collection<NoeliaMessage>>> function) {
         if(acceptFunction == null) {
